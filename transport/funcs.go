@@ -21,7 +21,7 @@
 // metric struct formats.
 //
 // All APIs in this package are experimental.
-package channelz
+package transport
 
 import (
 	"sort"

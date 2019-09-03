@@ -38,8 +38,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/grpclog"
-	"grpc-go/transport/utils/channelz"
-	"grpc-go/transport/utils/grpcrand"
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/peer"
@@ -237,8 +235,8 @@ func newHTTP2Server(conn net.Conn, config *ServerConfig) (_ ServerTransport, err
 		connBegin := &stats.ConnBegin{}
 		t.stats.HandleConn(t.ctx, connBegin)
 	}
-	if channelz.IsOn() {
-		t.channelzID = channelz.RegisterNormalSocket(t, config.ChannelzParentID, "")
+	if IsOn() {
+		t.channelzID = RegisterNormalSocket(t, config.ChannelzParentID, "")
 	}
 	t.framer.writer.Flush()
 
@@ -383,7 +381,7 @@ func (t *http2Server) operateHeaders(frame *http2.MetaHeadersFrame, handle func(
 		t.idle = time.Time{}
 	}
 	t.mu.Unlock()
-	if channelz.IsOn() {
+	if IsOn() {
 		t.czmu.Lock()
 		t.streamsStarted++
 		t.lastStreamCreated = time.Now()
@@ -917,7 +915,7 @@ func (t *http2Server) keepalive() {
 				return
 			}
 			pingSent = true
-			if channelz.IsOn() {
+			if IsOn() {
 				t.czmu.Lock()
 				t.kpCount++
 				t.czmu.Unlock()
@@ -946,8 +944,8 @@ func (t *http2Server) Close() error {
 	t.controlBuf.finish()
 	t.cancel()
 	err := t.conn.Close()
-	if channelz.IsOn() {
-		channelz.RemoveEntry(t.channelzID)
+	if IsOn() {
+		RemoveEntry(t.channelzID)
 	}
 	// Cancel all active streams.
 	for _, s := range streams {
@@ -984,7 +982,7 @@ func (t *http2Server) closeStream(s *Stream, rst bool, rstCode http2.ErrCode, hd
 				}
 			}
 			t.mu.Unlock()
-			if channelz.IsOn() {
+			if IsOn() {
 				t.czmu.Lock()
 				if eosReceived {
 					t.streamsSucceeded++
@@ -1078,9 +1076,9 @@ func (t *http2Server) outgoingGoAwayHandler(g *goAway) (bool, error) {
 	return false, nil
 }
 
-func (t *http2Server) ChannelzMetric() *channelz.SocketInternalMetric {
+func (t *http2Server) ChannelzMetric() *SocketInternalMetric {
 	t.czmu.RLock()
-	s := channelz.SocketInternalMetric{
+	s := SocketInternalMetric{
 		StreamsStarted:                   t.streamsStarted,
 		StreamsSucceeded:                 t.streamsSucceeded,
 		StreamsFailed:                    t.streamsFailed,
@@ -1137,6 +1135,6 @@ func getJitter(v time.Duration) time.Duration {
 	}
 	// Generate a jitter between +/- 10% of the value.
 	r := int64(v / 10)
-	j := grpcrand.Int63n(2*r) - r
+	j := Int63n(2*r) - r
 	return time.Duration(j)
 }

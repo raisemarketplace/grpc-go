@@ -19,7 +19,6 @@
 package transport
 
 import (
-	"grpc-go/transport/utils/channelz"
 	"io"
 	"math"
 	"net"
@@ -257,8 +256,8 @@ func newHTTP2Client(connectCtx, ctx context.Context, addr TargetInfo, opts Conne
 		}
 		t.statsHandler.HandleConn(t.ctx, connBegin)
 	}
-	if channelz.IsOn() {
-		t.channelzID = channelz.RegisterNormalSocket(t, opts.ChannelzParentID, "")
+	if IsOn() {
+		t.channelzID = RegisterNormalSocket(t, opts.ChannelzParentID, "")
 	}
 	if t.kp.Time != infinity {
 		t.keepaliveEnabled = true
@@ -537,7 +536,7 @@ func (t *http2Client) NewStream(ctx context.Context, callHdr *CallHdr) (_ *Strea
 				return false, err
 			}
 			t.activeStreams[id] = s
-			if channelz.IsOn() {
+			if IsOn() {
 				t.czmu.Lock()
 				t.streamsStarted++
 				t.lastStreamCreated = time.Now()
@@ -667,7 +666,7 @@ func (t *http2Client) closeStream(s *Stream, err error, rst bool, rstCode http2.
 				delete(t.activeStreams, s.id)
 			}
 			t.mu.Unlock()
-			if channelz.IsOn() {
+			if IsOn() {
 				t.czmu.Lock()
 				if eosReceived {
 					t.streamsSucceeded++
@@ -710,8 +709,8 @@ func (t *http2Client) Close() error {
 	t.controlBuf.finish()
 	t.cancel()
 	err := t.conn.Close()
-	if channelz.IsOn() {
-		channelz.RemoveEntry(t.channelzID)
+	if IsOn() {
+		RemoveEntry(t.channelzID)
 	}
 	// Notify all active streams.
 	for _, s := range streams {
@@ -1202,7 +1201,7 @@ func (t *http2Client) keepalive() {
 				}
 			} else {
 				t.mu.Unlock()
-				if channelz.IsOn() {
+				if IsOn() {
 					t.czmu.Lock()
 					t.kpCount++
 					t.czmu.Unlock()
@@ -1244,9 +1243,9 @@ func (t *http2Client) GoAway() <-chan struct{} {
 	return t.goAway
 }
 
-func (t *http2Client) ChannelzMetric() *channelz.SocketInternalMetric {
+func (t *http2Client) ChannelzMetric() *SocketInternalMetric {
 	t.czmu.RLock()
-	s := channelz.SocketInternalMetric{
+	s := SocketInternalMetric{
 		StreamsStarted:                  t.streamsStarted,
 		StreamsSucceeded:                t.streamsSucceeded,
 		StreamsFailed:                   t.streamsFailed,

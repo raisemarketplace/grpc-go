@@ -18,7 +18,7 @@
 
 // Package grpcrand implements math/rand functions in a concurrent-safe way
 // with a global random source, independent of math/rand's global source.
-package grpcrand
+package transport
 
 import (
 	"math/rand"

@@ -16,7 +16,7 @@
  *
  */
 
-package channelz
+package transport
 
 import (
 	"net"
