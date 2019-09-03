@@ -19,6 +19,7 @@
 package transport
 
 import (
+	"grpc-go/transport/utils/channelz"
 	"io"
 	"math"
 	"net"
@@ -33,7 +34,6 @@ import (
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
-	"grpc-go/utils/channelz"
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/peer"
