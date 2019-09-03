@@ -33,7 +33,7 @@ import (
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
-	"grpc-go/internal/channelz"
+	"grpc-go/utils/channelz"
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/peer"
